@@ -1,0 +1,37 @@
+package org.zerock.interceptor;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+import org.zerock.domain.MemberVO;
+
+import lombok.extern.log4j.Log4j;
+
+@Log4j
+public class PostLoginInterceptor extends HandlerInterceptorAdapter {
+
+	@Override
+	public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
+			ModelAndView modelAndView) throws Exception {
+		
+		Object loginResult = modelAndView.getModel().get("member");
+		
+		MemberVO vo = (MemberVO)loginResult;
+		
+		request.getSession().setAttribute("member", vo);
+		
+		Cookie loginCookie = new Cookie("login", request.getSession().getId());
+		
+		// 쿠키는 한 사이트에서 20개까지 만들수 있는데 Path는 쿠키의 스코프라고 생각하면 된다.
+		loginCookie.setPath("/");
+		
+		loginCookie.setMaxAge(60 * 60 * 24 * 7);
+		
+		response.addCookie(loginCookie);
+	}
+	
+	
+}
